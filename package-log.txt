@@ -1,0 +1,40 @@
+
+> multi-imap-client@1.0.0 package
+> electron-vite build --config electron-vite.config.ts && electron-builder --config electron-builder.yml
+
+[36mvite v5.4.21 [32mbuilding SSR bundle for production...[36m[39m
+transforming...
+[32m✓[39m 16 modules transformed.
+rendering chunks...
+[2mout/main/[22m[36mindex.js  [39m[1m[2m92.72 kB[22m[1m[22m
+[32m✓ built in 167ms[39m
+[36mvite v5.4.21 [32mbuilding SSR bundle for production...[36m[39m
+transforming...
+[32m✓[39m 1 modules transformed.
+rendering chunks...
+[2mout/preload/[22m[36mindex.cjs  [39m[1m[2m5.64 kB[22m[1m[22m
+[32m✓ built in 13ms[39m
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 1641 modules transformed.
+rendering chunks...
+[2m../../out/renderer/[22m[32mindex.html                 [39m[1m[2m    0.42 kB[22m[1m[22m
+[2m../../out/renderer/[22m[35massets/index-CLN42cuh.css  [39m[1m[2m   59.22 kB[22m[1m[22m
+[2m../../out/renderer/[22m[36massets/index-ChZAAgOk.js   [39m[1m[33m1,328.11 kB[39m[22m
+[32m✓ built in 1.83s[39m
+  • electron-builder  version=24.13.3 os=10.0.28000
+  • loaded configuration  file=C:\Users\qiyana\Desktop\IMAP CLIENT\multi-imap-client\electron-builder.yml
+  • author is missed in the package.json  appPackageFile=C:\Users\qiyana\Desktop\IMAP CLIENT\multi-imap-client\package.json
+  • skipped dependencies rebuild  reason=npmRebuild is set to false
+  • packaging       platform=win32 arch=x64 electron=31.7.7 appOutDir=dist\win-unpacked
+  • downloading     url=https://github.com/electron/electron/releases/download/v31.7.7/electron-v31.7.7-win32-x64.zip size=111 MB parts=8
+  • downloaded      url=https://github.com/electron/electron/releases/download/v31.7.7/electron-v31.7.7-win32-x64.zip duration=3.567s
+  • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z size=5.6 MB parts=1
+  • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z duration=1.922s
+  • building        target=nsis file=dist\multi-imap-client-1.0.0-setup.exe archs=x64 oneClick=true perMachine=false
+  • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-3.0.4.1/nsis-3.0.4.1.7z size=1.3 MB parts=1
+  • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-3.0.4.1/nsis-3.0.4.1.7z duration=1.51s
+  • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-resources-3.4.1/nsis-resources-3.4.1.7z size=731 kB parts=1
+  • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-resources-3.4.1/nsis-resources-3.4.1.7z duration=1.411s
+  • building block map  blockMapFile=dist\multi-imap-client-1.0.0-setup.exe.blockmap
+  • building        target=portable file=dist\Multi IMAP Client 1.0.0.exe archs=x64

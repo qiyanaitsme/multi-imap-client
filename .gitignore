@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build output (regenerable: npm run build / npm run package)
+out/
+dist/
+*.tsbuildinfo
+
+# ── SECRETS — never commit ──────────────────────────────────────────────
+# Real credentials, proxy lists and relay mapping. Use *.example.* files.
+accounts.txt
+proxies.txt
+imap-servers.json
+config/
+
+# Environment
+.env
+.env.*
+*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# electron-builder working files
+*.blockmap
+builder-debug.yml
