@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Генератор imap-servers.json</title>
+<style>
+  :root {
+    --bg: #1e1e2e;
+    --panel: #27273a;
+    --panel-2: #2f2f45;
+    --border: #3d3d5c;
+    --text: #e0e0ef;
+    --muted: #9494b3;
+    --accent: #4f8ff7;
+    --danger: #f75f5f;
+    --ok: #4fd07a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .panel h2 { font-size: 14px; margin-bottom: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  label.field { flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 4px; }
+  label.field span { font-size: 12px; color: var(--muted); }
+  input[type="text"], input[type="number"] {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 8px 10px;
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+  }
+  input:focus { border-color: var(--accent); }
+  .checks { display: flex; gap: 16px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .checks label { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; user-select: none; }
+  button {
+    background: var(--accent);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    padding: 9px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:hover { filter: brightness(1.1); }
+  button.ghost {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-weight: 400;
+  }
+  button.small { padding: 4px 10px; font-size: 12px; }
+  button.danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+  .entries { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .entry .dom { font-family: Consolas, monospace; font-weight: 600; }
+  .entry .map { color: var(--muted); font-family: Consolas, monospace; font-size: 12px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(79,143,247,.15);
+    color: var(--accent);
+    border: 1px solid rgba(79,143,247,.35);
+  }
+  .badge.no-tls { background: rgba(247,95,95,.12); color: var(--danger); border-color: rgba(247,95,95,.35); }
+  .badge.catch { background: rgba(79,208,122,.12); color: var(--ok); border-color: rgba(79,208,122,.35); }
+  .empty { color: var(--muted); font-size: 13px; padding: 12px; text-align: center; border: 1px dashed var(--border); border-radius: 8px; }
+  textarea#jsonOut {
+    width: 100%;
+    height: 260px;
+    background: #16161f;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: #b8e0a0;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+    padding: 12px;
+    resize: vertical;
+    outline: none;
+    white-space: pre;
+  }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+  .hint code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+  .btns { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity .2s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+  .err { color: var(--danger); font-size: 12px; margin-top: 6px; min-height: 16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Генератор imap-servers.json</h1>
+  <div class="sub">Привяжите домены к IMAP-серверам и скопируйте готовый конфиг для Multi IMAP Client.</div>
+
+  <div class="grid">
+    <!-- Left: editor -->
+    <div class="panel">
+      <h2>Добавить привязку</h2>
+      <div class="row">
+        <label class="field"><span>Домен</span>
+          <input type="text" id="domain" placeholder="example.com">
+        </label>
+        <label class="field"><span>IMAP-хост</span>
+          <input type="text" id="host" placeholder="imap.example.com">
+        </label>
+      </div>
+      <div class="row">
+        <label class="field" style="max-width:110px"><span>Порт</span>
+          <input type="number" id="port" value="993" min="1" max="65535">
+        </label>
+        <div class="checks" style="margin:0; align-self:flex-end; padding-bottom:6px">
+          <label><input type="checkbox" id="tls" checked> TLS</label>
+          <label><input type="checkbox" id="wildcard"> Wildcard (*.домен)</label>
+        </div>
+      </div>
+      <div class="row" style="margin-bottom:0">
+        <button id="addBtn">Добавить</button>
+        <button class="ghost" id="catchAllBtn">Добавить catch-all «*»</button>
+      </div>
+      <div class="err" id="formErr"></div>
+
+      <h2 style="margin-top:16px">Правила (порядок не важен — приложение само выбирает самое длинное совпадение)</h2>
+      <div class="entries" id="entries"></div>
+    </div>
+
+    <!-- Right: output -->
+    <div class="panel">
+      <h2>Результат</h2>
+      <textarea id="jsonOut" readonly spellcheck="false"></textarea>
+      <div class="btns">
+        <button id="copyBtn">Копировать</button>
+        <button class="ghost" id="downloadBtn">Скачать .json</button>
+      </div>
+      <div class="btns">
+        <button class="ghost small" id="importBtn">Импорт JSON из буфера</button>
+        <button class="ghost small" id="clearBtn">Очистить всё</button>
+      </div>
+      <div class="hint">
+        Приложение сопоставляет домен аккаунта с правилами так:
+        точное совпадение &rarr; самое длинное <code>*.суффикс</code> &rarr; <code>*</code> (catch-all).
+        Если ничего не совпало и <code>*</code> нет — берётся <code>imap.&lt;домен&gt;:993</code>.
+        Ctrl+V в поле слева также импортирует JSON.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // entries: [{ domain, host, port, tls }] ; domain "*" = catch-all
+  let entries = [];
+
+  const $ = (id) => document.getElementById(id);
+  const els = {
+    domain: $('domain'), host: $('host'), port: $('port'),
+    tls: $('tls'), wildcard: $('wildcard'),
+    add: $('addBtn'), catchAll: $('catchAllBtn'),
+    entries: $('entries'), out: $('jsonOut'),
+    copy: $('copyBtn'), download: $('downloadBtn'),
+    import: $('importBtn'), clear: $('clearBtn'),
+    err: $('formErr'), toast: $('toast'),
+  };
+
+  function toast(msg) {
+    els.toast.textContent = msg;
+    els.toast.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => els.toast.classList.remove('show'), 1800);
+  }
+
+  function normDomain(d) {
+    return d.trim().toLowerCase().replace(/^\*\./, '').replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+  }
+
+  function addEntry(domain, host, port, tls) {
+    entries.push({ domain, host, port, tls });
+    render();
+  }
+
+  function render() {
+    // list
+    els.entries.innerHTML = '';
+    if (entries.length === 0) {
+      els.entries.innerHTML = '<div class="empty">Пока пусто — добавьте первую привязку</div>';
+    }
+    entries.forEach((e, i) => {
+      const div = document.createElement('div');
+      div.className = 'entry';
+      const badges = e.domain === '*'
+        ? '<span class="badge catch">catch-all</span>'
+        : (e.tls ? '<span class="badge">TLS</span>' : '<span class="badge no-tls">no TLS</span>');
+      div.innerHTML =
+        '<span class="dom"></span>' +
+        '<span class="map"></span>' + badges +
+        '<button class="danger small">удалить</button>';
+      div.querySelector('.dom').textContent = e.domain;
+      div.querySelector('.map').textContent = '→ ' + e.host + ':' + e.port;
+      div.querySelector('button').onclick = () => { entries.splice(i, 1); render(); };
+      els.entries.appendChild(div);
+    });
+    // json
+    const obj = {};
+    entries.forEach(e => {
+      obj[e.domain] = { host: e.host, port: e.port, tls: e.tls };
+    });
+    els.out.value = JSON.stringify(obj, null, 2);
+  }
+
+  function showError(msg) {
+    els.err.textContent = msg || '';
+  }
+
+  els.add.addEventListener('click', () => {
+    showError('');
+    const raw = els.domain.value;
+    const host = els.host.value.trim();
+    const port = parseInt(els.port.value, 10);
+    if (!raw.trim()) return showError('Укажите домен.');
+    if (!host) return showError('Укажите IMAP-хост.');
+    if (!Number.isInteger(port) || port < 1 || port > 65535) return showError('Порт: число 1–65535.');
+    const domain = (els.wildcard.checked ? '*.' : '') + normDomain(raw);
+    if (entries.some(e => e.domain === domain)) return showError('Домен «' + domain + '» уже добавлен.');
+    addEntry(domain, host, port, els.tls.checked);
+    els.domain.value = ''; els.host.value = ''; els.port.value = 993; els.tls.checked = true; els.wildcard.checked = false;
+    els.domain.focus();
+  });
+
+  els.domain.addEventListener('keydown', (e) => { if (e.key === 'Enter') els.add.click(); });
+  els.host.addEventListener('keydown', (e) => { if (e.key === 'Enter') els.add.click(); });
+
+  els.catchAll.addEventListener('click', () => {
+    showError('');
+    if (entries.some(e => e.domain === '*')) return showError('Catch-all «*» уже есть.');
+    const host = els.host.value.trim() || 'imap.example.com';
+    const port = parseInt(els.port.value, 10) || 993;
+    addEntry('*', host, port, els.tls.checked);
+  });
+
+  function importJson(text) {
+    let obj;
+    try {
+      obj = JSON.parse(text.replace(/^\uFEFF/, ''));
+    } catch {
+      return false;
+    }
+    if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) return false;
+    const next = [];
+    for (const [domain, cfg] of Object.entries(obj)) {
+      if (!cfg || typeof cfg !== 'object' || !cfg.host) continue;
+      next.push({
+        domain,
+        host: String(cfg.host),
+        port: Number(cfg.port) || 993,
+        tls: !!cfg.tls,
+      });
+    }
+    if (next.length === 0) return false;
+    entries = next;
+    render();
+    return true;
+  }
+
+  els.copy.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(els.out.value);
+      toast('Скопировано в буфер');
+    } catch {
+      els.out.removeAttribute('readonly');
+      els.out.select();
+      document.execCommand('copy');
+      els.out.setAttribute('readonly', '');
+      toast('Скопировано в буфер');
+    }
+  });
+
+  els.download.addEventListener('click', () => {
+    const blob = new Blob([els.out.value], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'imap-servers.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('Файл скачан');
+  });
+
+  els.import.addEventListener('click', async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      toast(importJson(text) ? 'JSON импортирован' : 'В буфере нет корректного imap-servers.json');
+    } catch {
+      toast('Нет доступа к буферу — вставьте текст через Ctrl+V в список правил');
+    }
+  });
+
+  els.clear.addEventListener('click', () => {
+    if (entries.length && !confirm('Удалить все правила?')) return;
+    entries = [];
+    render();
+  });
+
+  // Ctrl+V anywhere (outside inputs) imports JSON
+  document.addEventListener('paste', (e) => {
+    if (e.target === els.domain || e.target === els.host || e.target === els.port) return;
+    const text = (e.clipboardData || window.clipboardData).getData('text');
+    if (importJson(text)) {
+      e.preventDefault();
+      toast('JSON импортирован');
+    }
+  });
+
+  // Starter example with neutral placeholder data
+  addEntry('*.example.com', 'imap.example.com', 993, true);
+  addEntry('example.org', 'mail.example.org', 993, true);
+  render();
+</script>
+</body>
+</html>

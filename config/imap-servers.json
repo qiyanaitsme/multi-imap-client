@@ -1,0 +1,12 @@
+{
+  "*.notletters.com": {
+    "host": "imap.notletters.com",
+    "port": 993,
+    "tls": true
+  },
+  "*.firstmail.ltd": {
+    "host": "imap.firstmail.ltd",
+    "port": 993,
+    "tls": true
+  }
+}
